@@ -1,0 +1,118 @@
+\documentclass{SLclass_2025-10-11}
+
+%#######################
+%Add packages
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{bm}
+
+% Page setup
+\geometry{margin=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Statistical Learning}
+\fancyhead[R]{\thepage}
+\fancyfoot[C]{Introduction to Statistical Learning}
+
+% Theorem environments
+\newtheorem{theorem}{ทฎษฎี}
+\newtheorem{definition}{นิยาม}
+\newtheorem{example}{ตัวอย่าง}
+\newtheorem{exercise}{แบบฝึกหัด}
+
+% Custom commands
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bp}{\mathbf{p}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bW}{\mathbf{W}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bzero}{\mathbf{0}}
+
+%#######################
+%Create color box in def
+\usepackage[most]{tcolorbox}
+
+\newtcolorbox{myBox}[3][]
+{
+	arc=5mm,
+	lower separated=false,
+	fonttitle=\bfseries,
+	colbacktitle=yellow!40,
+	coltitle=yellow!20!black,
+	enhanced,
+	attach boxed title to top left={xshift=0.5cm, yshift=-2mm},
+	colframe=yellow!50!black,
+	colback=yellow!10,
+	overlay={\node[draw=green!50!black,thick, fill=yellow!10,rounded corners=1mm, yshift=0pt, xshift=-0.5cm, left, text=yellow!50!black, anchor=east, font=\bfseries] at (frame.north east) {#3};},
+	title=#2,#1}
+
+\newtcolorbox{myLimit}[3][]
+{
+	arc=5mm,
+	lower separated=false,
+	fonttitle=\bfseries,
+	colbacktitle=blue!40,
+	coltitle=blue!20!black,
+	enhanced,
+	attach boxed title to top left={xshift=0.5cm, yshift=-2mm},
+	colframe=blue!50!black,
+	colback=blue!10,
+	overlay={\node[draw=blue!50!black,thick, fill=blue!10,rounded corners=1mm, yshift=0pt, xshift=-0.5cm, left, text=blue!50!black, anchor=east, font=\bfseries] at (frame.north east) {#3};},
+	title=#2,#1}
+
+\newtcolorbox{myExmp}[3][]
+{
+	arc=5mm,
+	lower separated=false,
+	fonttitle=\bfseries,
+	colbacktitle=lime!10,
+	coltitle=lime!50!black,
+	enhanced,
+	attach boxed title to top left={xshift=0.5cm, yshift=-2mm},
+	colframe=lime!50!black,
+	colback=lime!10,
+	overlay={\node[draw=lime!50!black,thick, fill=lime!10,rounded corners=1mm, yshift=0pt, xshift=-0.5cm, left, text=lime!50!black, anchor=east, font=\bfseries] at (frame.north east) {#3};},
+	title=#2,#1}
+
+%#######################
+\newcounter{tocitem}
+\newcounter{linenumber} 
+
+%Nested enumeration numbering 1.1, 1.2, 1.3
+renewcommand{\labelenumii}{\theenumii}
+renewcommand{\theenumii}{\theenumi.\arabic{enumii}.}
+
+\begin{document}
+	
+	\frontmatter
+	\maketitle
+	\tableofcontents
+	
+	\mainmatter
+	
+	%Chapter 1: Introduction
+	\input{Chapter/CH1_Intro}
+	
+	%Chapter 2: Supervised Learning
+	\input{Chapter/CH2_Supervised}
+	
+	%Chapter 3: Regression
+	\input{Chapter/CH3_Regression}
+	
+	%Chapter 4: Decision Tree and Random Forest
+	\input{Chapter/CH4_DT-RF}
+	
+	%Chapter 5: Naive Bayes
+	\input{Chapter/CH5_Bayes-NB}
+	
+	%Chapter 6: Unsupervised Learning
+	\input{Chapter/CH6_Unsupervised}
+	
+	%Chapter 7: Evaluation
+	\input{Chapter/CH7_Evaluation}
+	
+\end{document}

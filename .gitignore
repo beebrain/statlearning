@@ -1,0 +1,16 @@
+# LaTeX
+*.aux
+*.log
+*.synctex.gz
+*.toc
+*.bcf
+*.run.xml
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDEs
+.vscode/

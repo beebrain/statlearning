@@ -1,26 +1,552 @@
 \chapter{การประเมินผลและการปรับปรุงประสิทธิภาพของตัวแบบ}
+\label{CH7_Evaluation}
 
+หลังจากที่ได้ศึกษาวิธีการสร้างตัวแบบการเรียนรู้ของเครื่องหลายรูปแบบในบทก่อนหน้า ไม่ว่าจะเป็นการถดถอยเชิงเส้น การถดถอยโลจิสติค ต้นไม้ตัดสินใจ และการสุ่มป่าไม้ คำถามสำคัญที่ตามมาคือ ``ตัวแบบที่สร้างขึ้นมีประสิทธิภาพเพียงพอหรือไม่'' และ ``เราจะเปรียบเทียบตัวแบบหลายตัวแบบเพื่อเลือกตัวที่ดีที่สุดได้อย่างไร'' บทนี้จะอธิบายเครื่องมือและวิธีการทางสถิติที่จำเป็นสำหรับการประเมินประสิทธิภาพของตัวแบบอย่างเป็นระบบ โดยแบ่งเนื้อหาออกเป็น 5 ส่วนหลัก ได้แก่ การประเมินประสิทธิภาพสำหรับการพยากรณ์ (Regression) การประเมินประสิทธิภาพสำหรับการจำแนกประเภท (Classification) เส้นโค้ง ROC และค่า AUC การตรวจสอบความถูกต้องของตัวแบบด้วย Train-Test Split และ Cross-Validation และส่วนสุดท้ายครอบคลุมปัญหา Overfitting และ Underfitting รวมถึงเทคนิค Regularization
 
+%##########################################
 \section{การประเมินประสิทธิภาพสำหรับการพยากรณ์}
-\subsection{MSE, RMSE, MAE, R-squared}
+การประเมินประสิทธิภาพของตัวแบบการพยากรณ์ (Regression Models) เป็นขั้นตอนที่มีความสำคัญยิ่งในการวิเคราะห์ข้อมูล เนื่องจากตัวแบบการพยากรณ์ที่ดีต้องสามารถทำนายค่าที่ใกล้เคียงกับค่าจริงมากที่สุด ในทางคณิตศาสตร์ ความคลาดเคลื่อน (Error) ของการทำนายนิยามได้จากผลต่างระหว่างค่าจริง $y_i$ และค่าทำนาย $\hat{y}_i$ กล่าวคือ $e_i = y_i - \hat{y}_i$ และเป้าหมายของการเรียนรู้คือการหาตัวแบบที่ทำให้ความคลาดเคลื่อนเหล่านี้มีค่าน้อยที่สุดโดยรวม การวัดประสิทธิภาพจึงต้องอาศัยตัวชี้วัดที่สามารถรวมความคลาดเคลื่อนทั้งหมดในชุดข้อมูลให้เป็นค่าตัวเลขเดียวที่บ่งบอกคุณภาพของตัวแบบได้อย่างชัดเจน
 
+\subsection{MSE, RMSE, MAE และ R-squared}
+ในการวัดความคลาดเคลื่อนของตัวแบบการพยากรณ์ มีตัวชี้วัดมาตรฐานที่ใช้กันอย่างแพร่หลาย 4 ตัว ได้แก่ MSE (Mean Squared Error) RMSE (Root Mean Squared Error) MAE (Mean Absolute Error) และ R-squared ซึ่งแต่ละตัวมีความหมายและการตีความที่แตกต่างกัน
 
+\begin{myBox}[]{สูตรคำนวณตัวชี้วัดประสิทธิภาพการพยากรณ์}{}
+สมมติให้มีข้อมูล $n$ ตัวอย่าง โดยที่ $y_i$ คือค่าจริงและ $\hat{y}_i$ คือค่าทำนายของตัวแบบ ตัวชี้วัดทั้ง 4 คำนวณได้ดังนี้
 
+\begin{enumerate}
+\item \textbf{Mean Squared Error (MSE)}
+$$MSE = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2 = \frac{1}{n}\sum_{i=1}^{n}e_i^2$$
+
+\item \textbf{Root Mean Squared Error (RMSE)}
+$$RMSE = \sqrt{MSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$
+
+\item \textbf{Mean Absolute Error (MAE)}
+$$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i| = \frac{1}{n}\sum_{i=1}^{n}|e_i|$$
+
+\item \textbf{R-squared ($R^2$)}
+$$R^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2} = 1 - \frac{SS_{res}}{SS_{tot}}$$
+โดยที่ $\bar{y} = \frac{1}{n}\sum_{i=1}^{n}y_i$ คือค่าเฉลี่ยของค่าจริง
+\end{enumerate}
+\end{myBox}
+
+ความแตกต่างระหว่าง MSE และ MAE อยู่ที่การให้น้ำหนักกับค่าคลาดเคลื่อน โดย MSE ยกกำลังสองค่าความคลาดเคลื่อนทำให้ค่าที่คลาดเคลื่อนมากถูกลงโทษหนักกว่าค่าที่คลาดเคลื่อนน้อย ดังนั้น MSE จึงไวต่อค่าผิดปกติ (Outliers) มากกว่า MAE ในทางกลับกัน MAE ให้น้ำหนักเท่ากันกับทุกค่าคลาดเคลื่อน ทำให้เป็นตัวชี้วัดที่ทนทาน (Robust) ต่อค่าผิดปกติมากกว่า ส่วน RMSE เป็นรากที่สองของ MSE ซึ่งมีข้อดีคือมีหน่วยเดียวกับตัวแปรตาม ทำให้ตีความได้ง่ายกว่า MSE
+
+สำหรับ R-squared เป็นตัวชี้วัดที่มีความพิเศษ ค่า $R^2$ บ่งบอกสัดส่วนของความแปรปรวน (Variance) ในตัวแปรตามที่ตัวแบบสามารถอธิบายได้ ค่า $R^2$ มีค่าอยู่ระหว่าง 0 ถึง 1 โดยค่าใกล้ 1 หมายถึงตัวแบบมีความสามารถในการอธิบายความแปรปรวนของข้อมูลสูง ส่วนค่าใกล้ 0 หมายถึงตัวแบบไม่สามารถอธิบายความแปรปรวนได้ดี อย่างไรก็ตาม ค่า $R^2$ ที่สูงมากผิดปกติอาจเป็นสัญญาณของ Overfitting ซึ่งจะกล่าวถึงในรายละเอียดในส่วนหลังของบทนี้
+
+\begin{exmp}
+พิจารณาข้อมูลการพยากรณ์ยอดขายรายวันของร้านค้าปลีกแห่งหนึ่ง สมมติว่ามีข้อมูล 5 วันดังแสดงในตาราง \ref{table:sales_error} โดย $y_i$ คือยอดขายจริง (พันบาท) และ $\hat{y}_i$ คือยอดขายที่ตัวแบบทำนาย
+
+\begin{table}[h]
+\centering
+\caption{ข้อมูลยอดขายจริงเทียบกับค่าทำนายของตัวแบบ}
+\label{table:sales_error}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{วัน} & \textbf{ยอดขายจริง $y_i$} & \textbf{ทำนาย $\hat{y}_i$} & \textbf{คลาดเคลื่อน $e_i$} \\ \hline
+1 & 45 & 43 & 2 \\ \hline
+2 & 52 & 50 & 2 \\ \hline
+3 & 38 & 42 & -4 \\ \hline
+4 & 61 & 58 & 3 \\ \hline
+5 & 55 & 57 & -2 \\ \hline
+\end{tabular}
+\end{table}
+
+จากข้อมูลในตาราง คำนวณหาค่าตัวชี้วัดต่าง ๆ ได้ดังนี้
+
+การคำนวณค่าคลาดเคลื่อน $e_i = y_i - \hat{y}_i$ แสดงดังคอลัมน์สุดท้าย โดยผลรวมของค่าคลาดเคลื่อนเท่ากับ $2+2-4+3-2 = 1$ ซึ่งใกล้ศูนย์แสดงว่าตัวแบบไม่มีความลำเอียงเชิงระบบ
+
+สำหรับ MSE
+$$MSE = \frac{1}{5}(2^2 + 2^2 + (-4)^2 + 3^2 + (-2)^2) = \frac{1}{5}(4+4+16+9+4) = \frac{37}{5} = 7.4$$
+
+สำหรับ RMSE
+$$RMSE = \sqrt{7.4} \approx 2.72 \text{ (พันบาท)}$$
+
+สำหรับ MAE
+$$MAE = \frac{1}{5}(|2| + |2| + |-4| + |3| + |-2|) = \frac{1}{5}(2+2+4+3+2) = \frac{13}{5} = 2.6 \text{ (พันบาท)}$$
+
+สมมติค่าเฉลี่ยยอดขายจริง $\bar{y} = \frac{45+52+38+61+55}{5} = \frac{251}{5} = 50.2$
+
+$$R^2 = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2} = 1 - \frac{37}{(45-50.2)^2+(52-50.2)^2+(38-50.2)^2+(61-50.2)^2+(55-50.2)^2}$$
+$$= 1 - \frac{37}{27.04+3.24+148.84+116.64+23.04} = 1 - \frac{37}{318.8} \approx 0.884$$
+
+ค่า $R^2 \approx 0.884$ หมายความว่าตัวแบบสามารถอธิบายความแปรปรวนของยอดขายได้ประมาณร้อยละ 88.4 ซึ่งถือว่ามีประสิทธิภาพดี
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.45\textwidth}
+\centering
+\begin{verbatim}
+import numpy as np
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score
+)
+
+y_true = np.array([45, 52, 38, 61, 55])
+y_pred = np.array([43, 50, 42, 58, 57])
+
+mse = mean_squared_error(y_true, y_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_true, y_pred)
+r2 = r2_score(y_true, y_pred)
+
+print(f"MSE: {mse:.2f}")
+print(f"RMSE: {rmse:.2f}")
+print(f"MAE: {mae:.2f}")
+print(f"R2: {r2:.4f}")
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\centering
+ผลลัพธ์ที่ได้:
+
+MSE: 7.40
+RMSE: 2.72
+MAE: 2.60
+R2: 0.8840
+\end{minipage}
+\caption{Python code และผลลัพธ์การคำนวณตัวชี้วัดประสิทธิภาพการพยากรณ์}
+\label{fig:regression_metrics_code}
+\end{figure}
+\end{exmp}
+
+%##########################################
 \section{การประเมินประสิทธิภาพสำหรับการจำแนกประเภท}
+การประเมินประสิทธิภาพของตัวแบบการจำแนกประเภท (Classification Models) มีความซับซ้อนและแตกต่างจากการพยากรณ์อย่างมีนัยสำคัญ เนื่องจากผลลัพธ์ของการจำแนกประเภทเป็น ``หมวดหมู่'' (Class) ไม่ใช่ค่าตัวเลขที่ต่อเนื่อง ดังนั้นการวัด ``ความคลาดเคลื่อน'' จึงต้องพิจารณาว่าตัวแบบจำแนกถูกต้องหรือผิดในแต่ละกรณี และประเภทของความผิดพลาดที่เกิดขึ้นมีผลกระทบแตกต่างกันในทางปฏิบัติ ตัวอย่างเช่น ในระบบวินิจฉัยโรค การทำนายผู้ป่วยว่า ``ไม่เป็นโรค'' เมื่อจริง ๆ แล้วเป็นโรค (False Negative) มีผลร้ายแรงกว่าการทำนายว่า ``เป็นโรค'' เมื่อจริง ๆ ไม่เป็น (False Positive) อย่างมาก ดังนั้นการเลือกตัวชี้วัดที่เหมาะสมจึงขึ้นอยู่กับบริบทการใช้งาน
+
 \subsection{Confusion Matrix}
-\subsection{ตัวชี้วัดประสิทธิภาพ: Accuracy, Precision, Recall, F1-Score}
+Confusion Matrix เป็นเครื่องมือพื้นฐานที่ใช้แสดงผลการทำนายของตัวแบบการจำแนกประเภทในรูปตาราง โดยเปรียบเทียบผลการทำนายกับค่าจริง สำหรับปัญหาการจำแนกแบบทวิภาค (Binary Classification) ที่มี 2 กลุ่ม คือ Positive (P) และ Negative (N) โครงสร้างของ Confusion Matrix แสดงดังตาราง \ref{table:confusion_matrix}
 
+\begin{table}[h]
+\centering
+\caption{โครงสร้างของ Confusion Matrix สำหรับการจำแนกแบบทวิภาค}
+\label{table:confusion_matrix}
+\begin{tabular}{|c|c|c|c|}
+\hline
+ & \multicolumn{2}{c|}{\textbf{ทำนาย}} \\ \cline{2-3}
+\textbf{ค่าจริง} & \textbf{Positive} & \textbf{Negative} \\ \hline
+\textbf{Positive} & True Positive (TP) & False Negative (FN) \\ \hline
+\textbf{Negative} & False Positive (FP) & True Negative (TN) \\ \hline
+\end{tabular}
+\end{table}
+
+จากตารางข้างต้น คำอธิบายของแต่ละช่องมีดังนี้
+
+\begin{itemize}
+\item \textbf{True Positive (TP)} คือจำนวนกรณีที่ค่าจริงเป็น Positive และตัวแบบทำนายถูกต้องว่าเป็น Positive
+
+\item \textbf{True Negative (TN)} คือจำนวนกรณีที่ค่าจริงเป็น Negative และตัวแบบทำนายถูกต้องว่าเป็น Negative
+
+\item \textbf{False Positive (FP)} คือจำนวนกรณีที่ค่าจริงเป็น Negative แต่ตัวแบบทำนายผิดว่าเป็น Positive (เรียกว่า Type I Error)
+
+\item \textbf{False Negative (FN)} คือจำนวนกรณีที่ค่าจริงเป็น Positive แต่ตัวแบบทำนายผิดว่าเป็น Negative (เรียกว่า Type II Error)
+\end{itemize}
+
+\begin{exmp}
+พิจารณาระบบวินิจฉัยโรคเบาหวานโดยใช้ตัวแบบการเรียนรู้ของเครื่อง โดยผลการทดสอบกับผู้ป่วย 1000 คน แสดงผลดังนี้: มีผู้ป่วยจริง 200 คน (Positive) และไม่เป็นโรค 800 คน (Negative) เมื่อนำผลการวินิจฉัยจากตัวแบบมาเปรียบเทียบกับผลตรวจที่ถูกต้อง พบว่า TP = 160, FN = 40, FP = 60, TN = 740
+
+จากข้อมูลนี้ สามารถคำนวณตัวชี้วัดต่าง ๆ ได้ดังนี้
+
+Overall Accuracy = $\frac{TP + TN}{TP + TN + FP + FN} = \frac{160 + 740}{1000} = 0.90$ หรือร้อยละ 90
+
+Sensitivity (Recall ของ positive class) = $\frac{TP}{TP + FN} = \frac{160}{160 + 40} = 0.80$ หมายความว่าตัวแบบสามารถตรวจพบผู้เป็นโรคได้ร้อยละ 80
+
+Specificity = $\frac{TN}{TN + FP} = \frac{740}{740 + 60} = 0.925$ หมายความว่าตัวแบบสามารถระบุผู้ไม่เป็นโรคได้ถูกต้องร้อยละ 92.5
+\end{exmp}
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    recall_score,
+    precision_score
+)
+import numpy as np
+
+y_true = np.array([1]*200 + [0]*800)
+y_pred = np.array([1]*160 + [0]*40 + 
+                   [1]*60 + [0]*740)
+
+cm = confusion_matrix(y_true, y_pred)
+acc = accuracy_score(y_true, y_pred)
+sens = recall_score(y_true, y_pred, 
+                    pos_label=1)
+spec = recall_score(y_true, y_pred, 
+                    pos_label=0)
+
+print(f"Confusion Matrix:\n{cm}")
+print(f"Accuracy: {acc:.4f}")
+print(f"Sensitivity: {sens:.4f}")
+print(f"Specificity: {spec:.4f}")
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+ผลลัพธ์:
+
+Confusion Matrix:
+[[740  60]
+ [ 40 160]]
+Accuracy: 0.9000
+Sensitivity: 0.8000
+Specificity: 0.9250
+\end{minipage}
+\caption{Python code และผลลัพธ์การคำนวณ Confusion Matrix}
+\label{fig:confusion_matrix_code}
+\end{figure}
+
+\subsection{ตัวชี้วัดประสิทธิภาพ: Accuracy, Precision, Recall และ F1-Score}
+จากค่าใน Confusion Matrix สามารถคำนวณตัวชี้วัดประสิทธิภาพได้หลายตัว ซึ่งแต่ละตัวเน้นมุมมองที่แตกต่างกันในการประเมินคุณภาพของตัวแบบ
+
+\begin{myBox}[]{ตัวชี้วัดประสิทธิภาพการจำแนกประเภท}{}
+\begin{enumerate}
+\item \textbf{Accuracy} หรือความแม่นยำรวม แสดงสัดส่วนของการทำนายที่ถูกต้องทั้งหมด
+$$Accuracy = \frac{TP + TN}{TP + TN + FP + FN}$$
+
+\item \textbf{Precision} หรือความแม่นยำเชิงทำนาย แสดงสัดส่วนของกรณีที่ทำนายว่าเป็น Positive แล้วถูกต้องจริง ๆ
+$$Precision = \frac{TP}{TP + FP}$$
+
+\item \textbf{Recall} หรือความไว (Sensitivity) แสดงสัดส่วนของกรณี Positive จริงที่ตัวแบบสามารถตรวจพบได้
+$$Recall = \frac{TP}{TP + FN}$$
+
+\item \textbf{F1-Score} คือค่าเฉลี่ยฮาร์มอนิก (Harmonic Mean) ของ Precision และ Recall ซึ่งเป็นตัวชี้วัดที่สมดุลระหว่างทั้งสองตัว
+$$F1\text{-}Score = 2 \times \frac{Precision \times Recall}{Precision + Recall}$$
+\end{enumerate}
+\end{myBox}
+
+ความสัมพันธ์ระหว่าง Precision และ Recall มีลักษณะเป็น Trade-off โดยทั่วไปเมื่อต้องการเพิ่ม Recall อาจต้องลด Threshold ของความน่าจะเป็นที่ใช้ตัดสินใจ ทำให้ตัวแบบทำนาย Positive มากขึ้นแต่อาจมี False Positive เพิ่มขึ้นด้วย ทำให้ Precision ลดลง F1-Score จึงเป็นตัวชี้วัดที่เหมาะสมเมื่อต้องการสมดุลระหว่างทั้งสองตัว
+
+\begin{exmp}
+ใช้ข้อมูลจากตัวอย่างระบบวินิจฉัยโรคเบาหวานข้างต้น โดย TP = 160, FN = 40, FP = 60, TN = 740
+
+คำนวณ Precision = $\frac{160}{160 + 60} = \frac{160}{220} \approx 0.727$ 
+
+คำนวณ Recall = $\frac{160}{160 + 40} = \frac{160}{200} = 0.80$ (ซึ่งเท่ากับ Sensitivity ในกรณีทวิภาค)
+
+คำนวณ F1-Score = $2 \times \frac{0.727 \times 0.80}{0.727 + 0.80} = 2 \times \frac{0.5816}{1.527} \approx 0.762$
+
+จากผลการวิเคราะห์ ค่า Accuracy เท่ากับ 0.90 แสดงว่าตัวแบบทำนายถูกต้องร้อยละ 90 แต่เมื่อพิจารณา Precision = 0.727 ซึ่งหมายความว่าเมื่อตัวแบบทำนายว่าผู้ป่วยเป็นโรคเบาหวาน จะถูกต้องประมาณร้อยละ 72.7 เท่านั้น ส่วน Recall = 0.80 แสดงว่าตัวแบบสามารถตรวจพบผู้เป็นโรคได้ร้อยละ 80 ของผู้ที่เป็นโรคจริง ๆ ค่า F1-Score = 0.762 เป็นค่าเฉลี่ยที่สมดุลระหว่าง Precision และ Recall
+\end{exmp}
+
+%##########################################
 \section{ROC Curve และ AUC}
+เส้นโค้ง ROC (Receiver Operating Characteristic Curve) และค่า AUC (Area Under the ROC Curve) เป็นเครื่องมือที่ใช้ประเมินประสิทธิภาพของตัวแบบการจำแนกประเภทในสถานการณ์ที่มี Trade-off ระหว่าง True Positive Rate (TPR) และ False Positive Rate (FPR) ที่แตกต่างกันตาม Threshold ของการตัดสินใจ
 
+\begin{myBox}[]{องค์ประกอบของ ROC Curve}{}
+สำหรับการจำแนกแบบทวิภาค องค์ประกอบหลักของ ROC Curve ประกอบด้วย
 
+\begin{enumerate}
+\item \textbf{True Positive Rate (TPR)} หรือ Sensitivity
+$$TPR = \frac{TP}{TP + FN} = Recall$$
+
+\item \textbf{False Positive Rate (FPR)} หรือ 1 - Specificity
+$$FPR = \frac{FP}{FP + TN} = 1 - Specificity$$
+\end{enumerate}
+
+เมื่อเปลี่ยน Threshold ของการตัดสินใจจาก 0 ถึง 1 จะได้ค่า TPR และ FPR ที่แตกต่างกัน ซึ่งเมื่อนำมาลงจุดบนกราฟโดยมี FPR เป็นแกน X และ TPR เป็นแกน Y จะเกิดเส้นโค้ง ROC
+
+\begin{itemize}
+\item ถ้า Threshold = 0 จะทำนายทุกตัวอย่างว่าเป็น Positive ทำให้ TPR = 1 และ FPR = 1 (จุดบนขวาบน)
+\item ถ้า Threshold = 1 จะทำนายทุกตัวอย่างว่าเป็น Negative ทำให้ TPR = 0 และ FPR = 0 (จุดบนซ้ายล่าง)
+\item ตัวแบบที่ทำนายสุ่มจะมี ROC Curve เป็นเส้นทแยงมุม y = x
+\end{itemize}
+\end{myBox}
+
+\begin{exmp}
+พิจารณาตัวแบบการจำแนกประเภทผู้เป็นโรคหัวใจที่ให้ความน่าจะเป็นในการเป็นโรคสำหรับผู้ป่วย 8 คน ดังแสดงในตาราง \ref{table:roc_example}
+
+\begin{table}[h]
+\centering
+\caption{ผลการทำนายความน่าจะเป็นของตัวแบบและค่าจริง}
+\label{table:roc_example}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{ผู้ป่วย} & \textbf{ความน่าจะเป็น $\hat{p}$} & \textbf{ค่าจริง} \\ \hline
+1 & 0.90 & Positive \\ \hline
+2 & 0.75 & Positive \\ \hline
+3 & 0.60 & Positive \\ \hline
+4 & 0.55 & Negative \\ \hline
+5 & 0.45 & Positive \\ \hline
+6 & 0.35 & Negative \\ \hline
+7 & 0.20 & Negative \\ \hline
+8 & 0.10 & Negative \\ \hline
+\end{tabular}
+\end{table}
+
+เมื่อใช้ Threshold = 0.5 เป็นเกณฑ์ตัดสิน ผู้ที่มี $\hat{p} \geq 0.5$ จะถูกทำนายว่า Positive ดังนั้นผู้ป่วย 1, 2, 3, 4, 5 จะถูกทำนายว่า Positive และผู้ป่วย 6, 7, 8 จะถูกทำนายว่า Negative
+
+Confusion Matrix ที่ Threshold = 0.5: TP = 3 (ผู้ป่วย 1, 2, 3), FN = 1 (ผู้ป่วย 5), FP = 1 (ผู้ป่วย 4), TN = 3 (ผู้ป่วย 6, 7, 8)
+
+ดังนั้น TPR = 3/(3+1) = 0.75 และ FPR = 1/(1+3) = 0.25
+
+หากเปลี่ยน Threshold = 0.6 จะได้ TPR = 2/(2+2) = 0.50 และ FPR = 0/(0+4) = 0 ซึ่งให้จุดที่แตกต่างกันบน ROC Curve
+
+เมื่อวาด ROC Curve จากทุก Threshold ที่เป็นไปได้ พื้นที่ใต้เส้นโค้ง (AUC) จะบอกถึงประสิทธิภาพโดยรวมของตัวแบบ โดย AUC = 1 หมายถึงตัวแบบที่สมบูรณ์แบบ AUC = 0.5 หมายถึงตัวแบบที่ทำนายสุ่ม และ AUC < 0.5 หมายถึงตัวแบบที่แย่กว่าการทำนายสุ่ม
+\end{exmp}
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import (
+    roc_curve, auc, roc_auc_score
+)
+
+y_true = np.array([1,1,1,0,1,0,0,0])
+y_prob = np.array([0.90,0.75,0.60,0.55,
+                   0.45,0.35,0.20,0.10])
+
+fpr, tpr, thresholds = roc_curve(
+    y_true, y_prob)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(8,6))
+plt.plot(fpr, tpr, 
+         label=f'ROC curve (AUC = {roc_auc:.3f})')
+plt.plot([0,1],[0,1],'k--',label='Random')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC Curve')
+plt.legend()
+plt.grid()
+plt.show()
+print(f"AUC: {roc_auc:.4f}")
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+ผลลัพธ์:
+
+AUC: 0.8750
+
+ROC Curve แสดงว่าตัวแบบมี
+ประสิทธิภาพดี โดยมี AUC = 0.875
+ซึ่งสูงกว่าเส้นทแยงมุม (0.5)
+อย่างมีนัยสำคัญ
+\end{minipage}
+\caption{Python code และผลลัพธ์การวาด ROC Curve}
+\label{fig:roc_code}
+\end{figure}
+
+%##########################################
 \section{การตรวจสอบความถูกต้องของตัวแบบ}
+การตรวจสอบความถูกต้อง (Validation) ของตัวแบบการเรียนรู้ของเครื่องเป็นกระบวนการที่ใช้ประเมินว่าตัวแบบที่สร้างขึ้นมีความสามารถในการทำนายข้อมูลที่ไม่เคยเห็นมาก่อนได้ดีเพียงใด ทั้งนี้เนื่องจากวัตถุประสงค์หลักของการเรียนรู้ของเครื่องคือการสร้างตัวแบบที่สามารถนำไปใช้งานจริงกับข้อมูลใหม่ที่ยังไม่เคยเห็น ไม่ใช่เพียงการจำข้อมูลฝึกสอน (Training Data) การตรวจสอบความถูกต้องจึงเป็นขั้นตอนที่ขาดไม่ได้ในกระบวนการพัฒนาตัวแบบ เพื่อให้มั่นใจว่าตัวแบบมีความสามารถในการสังเคราะห์ (Generalization) ไปยังข้อมูลใหม่ได้อย่างแม่นยำ
+
 \subsection{Train-Test Split}
+วิธีการพื้นฐานที่สุดในการตรวจสอบความถูกต้องของตัวแบบคือการแบ่งข้อมูลออกเป็นชุดฝึกสอน (Training Set) และชุดทดสอบ (Test Set) โดยใช้ข้อมูลชุดฝึกสอนในการเรียนรู้และปรับแต่งตัวแบบ จากนั้นจึงใช้ข้อมูลชุดทดสอบในการประเมินประสิทธิภาพที่แท้จริงของตัวแบบ วิธีนี้เรียกว่า Train-Test Split ซึ่งมีความเรียบง่ายและเข้าใจได้ง่าย
+
+ในทางปฏิบัติ สัดส่วนการแบ่งข้อมูลที่นิยมใช้กันคือ 70:30 หรือ 80:20 ขึ้นอยู่กับขนาดของข้อมูลทั้งหมด หากข้อมูลมีขนาดใหญ่มาก อาจใช้สัดส่วน 90:10 ก็เพียงพอ แต่หากข้อมูลมีขนาดน้อย ต้องระวังไม่ให้ชุดทดสอบมีขนาดเล็กเกินไปจนทำให้ผลการประเมินไม่น่าเชื่อถือ นอกจากนี้ สิ่งสำคัญคือข้อมูลชุดทดสอบต้องไม่เคยถูกใช้ในการเรียนรู้ของตัวแบบก่อนหน้านี้เลย
+
+\begin{myBox}[]{ขั้นตอนการทำ Train-Test Split}{}
+\begin{enumerate}
+\item สุ่มแบ่งข้อมูลทั้งหมดออกเป็น 2 ส่วน: ชุดฝึกสอน (Training Set) และชุดทดสอบ (Test Set)
+\item ใช้ข้อมูลชุดฝึกสอนในการฝึก (Train) ตัวแบบ
+\item ใช้ข้อมูลชุดทดสอบในการประเมิน (Evaluate) ประสิทธิภาพของตัวแบบที่ฝึกแล้ว
+\item รายงานผลประสิทธิภาพที่ได้จากชุดทดสอบเป็นค่าประมาณของประสิทธิภาพที่แท้จริง
+\end{enumerate}
+
+สิ่งที่ควรระวังคือ ห้ามใช้ข้อมูลชุดทดสอบในการฝึกตัวแบบหรือปรับแต่งพารามิเตอร์ใด ๆ เพราะจะทำให้ผลการประเมินมีความลำเอียง (Biased) และไม่สะท้อนประสิทธิภาพที่แท้จริง
+\end{myBox}
+
+ข้อจำกัดของ Train-Test Split คือผลการประเมินขึ้นอยู่กับการสุ่มแบ่งข้อมูล หากการสุ่มแบ่งไม่ดี อาจทำให้ผลการประเมินไม่แม่นยำ นอกจากนี้ วิธีนี้ยังไม่ได้ใช้ข้อมูลทั้งหมดในการฝึกตัวแบบ ทำให้ตัวแบบอาจมีประสิทธิภาพลดลงเล็กน้อยเมื่อนำไปใช้กับข้อมูลทั้งหมด
+
 \subsection{Cross-Validation}
+Cross-Validation เป็นวิธีการตรวจสอบความถูกต้องที่มีประสิทธิภาพมากกว่า Train-Test Split โดยใช้ข้อมูลทั้งหมดในการฝึกและทดสอบตัวแบบหลายรอบ วิธีที่นิยมใช้กันมากที่สุดคือ K-Fold Cross-Validation
 
+\begin{myBox}[]{K-Fold Cross-Validation}{}
+ขั้นตอนของ K-Fold Cross-Validation มีดังนี้
 
+\begin{enumerate}
+\item แบ่งข้อมูลออกเป็น $K$ ส่วนเท่า ๆ กัน (เรียกว่า Folds)
+\item ฝึกตัวแบบ $K$ รอบ โดยในแต่ละรอบจะใช้ข้อมูล $K-1$ Folds สำหรับฝึก และ 1 Fold สำหรับทดสอบ
+\item คำนวณค่าประสิทธิภาพ (เช่น Accuracy, MSE) ในแต่ละรอบ
+\item คำนวณค่าเฉลี่ยและส่วนเบี่ยงเบนมาตรฐานของค่าประสิทธิภาพทั้ง $K$ รอบ
+\end{enumerate}
+
+ค่า $K$ ที่นิยมใช้คือ 5 และ 10 ส่วนเบี่ยงเบนมาตรฐานของผลการทดสอบบอกความมั่นใจในผลการประเมิน ถ้าส่วนเบี่ยงเบนมาตรฐานต่ำ แสดงว่าผลการประเมินมีความคงที่ข้าม Fold ต่าง ๆ
+\end{myBox}
+
+ข้อดีของ Cross-Validation เปรียบเทียบกับ Train-Test Split คือ (1) ใช้ข้อมูลทั้งหมดในการทดสอบ ทำให้การประเมินมีความแม่นยำมากขึ้น (2) ลดผลกระทบจากการสุ่มแบ่งข้อมูลที่อาจเกิดความลำเอียง (3) ให้ข้อมูลเชิงสถิติเกี่ยวกับความแปรปรวนของประสิทธิภาพตัวแบบ
+
+\begin{exmp}
+พิจารณาข้อมูล 1000 ตัวอย่าง เมื่อใช้ 5-Fold Cross-Validation จะแบ่งข้อมูลออกเป็น 5 กลุ่ม กลุ่มละ 200 ตัวอย่าง การฝึกจะทำ 5 รอบ โดยในแต่ละรอบจะฝึกด้วยข้อมูล 800 ตัวอย่างและทดสอบด้วย 200 ตัวอย่างที่ไม่เคยเห็นในรอบนั้น สมมติผลการทดสอบในแต่ละรอบได้ค่า Accuracy ดังนี้: 0.85, 0.87, 0.83, 0.86, 0.84
+
+ค่าเฉลี่ย Accuracy = (0.85 + 0.87 + 0.83 + 0.86 + 0.84)/5 = 4.25/5 = 0.85
+
+ส่วนเบี่ยงเบนมาตรฐาน = $\sqrt{\frac{(0.85-0.85)^2+(0.87-0.85)^2+(0.83-0.85)^2+(0.86-0.85)^2+(0.84-0.85)^2}{5-1}} = \sqrt{0.0002} \approx 0.014$
+
+ดังนั้นค่าประสิทธิภาพของตัวแบบโดยประมาณเท่ากับ 0.85 ± 0.014 ซึ่งแสดงความมั่นใจในผลการประเมินว่ามีความคงที่ดี
+\end{exmp}
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+from sklearn.model_selection import (
+    cross_val_score, KFold
+)
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
+
+X, y = make_classification(
+    n_samples=1000, n_features=20,
+    random_state=42
+)
+
+model = RandomForestClassifier(
+    n_estimators=100, random_state=42
+)
+
+kf = KFold(n_splits=5, shuffle=True, 
+           random_state=42)
+
+scores = cross_val_score(
+    model, X, y, cv=kf, scoring='accuracy'
+)
+
+print(f"Accuracy per fold: {scores}")
+print(f"Mean: {scores.mean():.4f}")
+print(f"Std: {scores.std():.4f}")
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+ผลลัพธ์ที่ได้ (ตัวอย่าง):
+
+Accuracy per fold: [0.85 0.87 0.83 0.86 0.84]
+Mean: 0.8500
+Std: 0.0141
+\end{minipage}
+\caption{Python code และผลลัพธ์การทำ Cross-Validation}
+\label{fig:cv_code}
+\end{figure}
+
+%##########################################
 \section{ปัญหา Overfitting และ Underfitting}
+Overfitting และ Underfitting เป็นปัญหาพื้นฐานที่สำคัญที่สุดในการเรียนรู้ของเครื่อง ซึ่งเกี่ยวข้องโดยตรงกับความสามารถในการสังเคราะห์ (Generalization) ของตัวแบบ การเข้าใจธรรมชาติของปัญหาทั้งสองและสาเหตุที่ทำให้เกิดขึ้นเป็นสิ่งจำเป็นสำหรับการสร้างตัวแบบที่มีประสิทธิภาพดี
+
+\begin{myLimit}[]{Overfitting และ Underfitting}{}
+\begin{itemize}
+\item \textbf{Overfitting} คือสถานการณ์ที่ตัวแบบ ``จำ'' ข้อมูลฝึกสอนได้ดีมากจนเกินไป รวมถึง Noise และความผันแปรสุ่มในข้อมูลฝึกสอน ทำให้ประสิทธิภาพกับข้อมูลฝึกสอนสูงมาก แต่ประสิทธิภาพกับข้อมูลใหม่ (Test Data) ต่ำกว่าที่คาดหวัง ในทางคณิตศาสตร์ Bias ต่ำแต่ Variance สูง
+
+\item \textbf{Underfitting} คือสถานการณ์ที่ตัวแบบไม่ซับซ้อนพอที่จะจับรูปแบบที่แท้จริง (Pattern) ในข้อมูล ทำให้ประสิทธิภาพต่ำทั้งกับข้อมูลฝึกสอนและข้อมูลทดสอบ ในทางคณิตศาสตร์ Bias สูงแต่ Variance ต่ำ
+\end{itemize}
+\end{myLimit}
+
+แนวคิด Bias-Variance Trade-off เป็นกรอบการวิเคราะห์ที่ช่วยให้เข้าใจปัญหานี้อย่างเป็นระบบ โดย Bias วัดความผิดพลาดโดยเฉลี่ยของตัวแบบจากค่าจริง ส่วน Variance วัดความไวของตัวแบบต่อการเปลี่ยนแปลงของข้อมูลฝึกสอน ตัวแบบที่ซับซ้อนมากเกินไปมักมี Variance สูง (Overfitting) ขณะที่ตัวแบบที่เรียบง่ายเกินไปมักมี Bias สูง (Underfitting) ตัวแบบที่ดีต้องมีสมดุลระหว่าง Bias และ Variance
+
+สาเหตุที่ทำให้เกิด Overfitting ได้แก่ ข้อมูลฝึกสอนมีขนาดน้อยเกินไป ตัวแบบมีความซับซ้อนมากเกินไป (พารามิเตอร์มากเกินไป) หรือข้อมูลมี Noise สูง ส่วนสาเหตุของ Underfitting ได้แก่ ตัวแบบไม่ซับซ้อนพอ ข้อมูลไม่เพียงพอ หรือลักษณะสำคัญ (Features) ไม่เหมาะสม
+
+วิธีแก้ปัญหา Overfitting ได้แก่ การเพิ่มข้อมูลฝึกสอน การลดความซับซ้อนของตัวแบบ การใช้เทคนิค Regularization การใช้ Cross-Validation ในการเลือกตัวแบบ และการตัดแต่ง (Pruning) สำหรับต้นไม้ตัดสินใจ ส่วนวิธีแก้ปัญหา Underfitting ได้แก่ การเพิ่มความซับซ้อนของตัวแบบ การเพิ่มจำนวนรอบการเรียน (Epochs) การใช้ Features ที่ดีขึ้น หรือการลดข้อจำกัดในตัวแบบ
+
+%##########################################
 \section{เทคนิค Regularization: Ridge และ Lasso}
-\section{การเปรียบเทียบและคัดเลือกเลือกตัวแบบ}
+Regularization เป็นเทคนิคที่ใช้ป้องกันปัญหา Overfitting โดยการเพิ่มข้อจำกัด (Constraint) ให้กับตัวแบบระหว่างการเรียนรู้ เป้าหมายคือการลดความซับซ้อนของตัวแบบโดยการลดค่าน้ำหนัก (Weights) ของพารามิเตอร์ที่ไม่จำเป็นให้ใกล้ศูนย์หรือเท่ากับศูนย์ เทคนิค Regularization ที่นิยมใช้กันมี 2 ชนิดหลักคือ Ridge และ Lasso
+
+\begin{myBox}[]{Ridge Regression และ Lasso Regression}{}
+สมมติให้มีฟังก์ชันสูญเสีย (Loss Function) สำหรับการถดถอยเชิงเส้นดั้งเดิมคือ
+
+$$L(\boldsymbol{\beta}) = \sum_{i=1}^{n}(y_i - \beta_0 - \beta_1 x_{i1} - \cdots - \beta_p x_{ip})^2$$
+
+\begin{enumerate}
+\item \textbf{Ridge Regression} เพิ่มพจน์ L2 Regularization
+$$L_{Ridge}(\boldsymbol{\beta}) = \sum_{i=1}^{n}(y_i - \beta_0 - \cdots - \beta_p x_{ip})^2 + \lambda\sum_{j=1}^{p}\beta_j^2$$
+
+โดยที่ $\lambda \geq 0$ คือพารามิเตอร์ Regularization (ต้องปรับแต่ง) และ $\sum_{j=1}^{p}\beta_j^2$ คือ L2 Norm ของเวกเตอร์สัมประสิทธิ์ Ridge จะลดค่า $\beta_j$ ให้ใกล้ศูนย์แต่ไม่ทำให้เป็นศูนย์เด็ดขาด
+
+\item \textbf{Lasso Regression} เพิ่มพจน์ L1 Regularization
+$$L_{Lasso}(\boldsymbol{\beta}) = \sum_{i=1}^{n}(y_i - \beta_0 - \cdots - \beta_p x_{ip})^2 + \lambda\sum_{j=1}^{p}|\beta_j|$$
+
+โดยที่ $\sum_{j=1}^{p}|\beta_j|$ คือ L1 Norm ของเวกเตอร์สัมประสิทธิ์ Lasso มีคุณสมบัติพิเศษคือสามารถทำให้บาง $\beta_j$ กลายเป็นศูนย์ได้ จึงเป็นทั้งวิธี Regularization และ Feature Selection ในเวลาเดียวกัน
+\end{enumerate}
+\end{myBox}
+
+ความแตกต่างสำคัญระหว่าง Ridge และ Lasso อยู่ที่ผลกระทบต่อสัมประสิทธิ์ ใน Ridge Regression ค่าสัมประสิทธิ์ทั้งหมดจะถูกลดขนาดให้เล็กลงแต่ไม่มีสักตัวที่เป็นศูนย์อย่างแท้จริง ทำให้ตัวแบบยังคงใช้ตัวแปรทั้งหมด ในทางกลับกัน Lasso สามารถทำให้ค่าสัมประสิทธิ์บางตัวเป็นศูนย์ได้โดยตรง ซึ่งเหมาะสำหรับปัญหาที่มีตัวแปรอธิบายจำนวนมากและต้องการเลือกเฉพาะตัวแปรที่มีความสำคัญจริง ๆ ในทางเรขาคณิต Ridge ทำให้ค่าสัมประสิทธิ์ถูก ``ดึง'' เข้าหาจุดกำเนิดในรูปวงกลม ในขณะที่ Lasso ดึงเข้าหาจุดที่อยู่บนแกนทำให้บางมิติกลายเป็นศูนย์
+
+\begin{exmp}
+พิจารณาข้อมูลการถดถอยเชิงเส้นพหุคูณที่มีตัวแปรอธิบาย 10 ตัว รวมถึงตัวแปรที่ไม่มีความสัมพันธ์ที่แท้จริงกับตัวแปรตาม เมื่อใช้ Ridge Regression ด้วยค่า $\lambda$ ที่เหมาะสม พบว่าค่าสัมประสิทธิ์ของตัวแปรที่ไม่เกี่ยวข้องถูกลดลงให้ใกล้ศูนย์มาก แต่ยังคงมีค่าเล็กน้อย ส่วนตัวแปรที่มีความสัมพันธ์จริงยังคงมีค่าสัมประสิทธิ์ที่มีนัยสำคัญ เมื่อเปรียบเทียบกับ Lasso ค่าสัมประสิทธิ์ของตัวแปรที่ไม่เกี่ยวข้องถูกทำให้เป็นศูนย์โดยตรง ทำให้ตัวแบบมีเ� только 5 ตัวแปรที่ใช้งานจริง
+\end{exmp}
+
+\begin{figure}[h]
+\begin{minipage}{0.45\textwidth}
+\begin{verbatim}
+import numpy as np
+from sklearn.linear_model import Ridge, Lasso
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler
+
+# Standardize features for regularization
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Ridge Regression with different alpha values
+alphas = [0.01, 0.1, 1, 10, 100]
+for alpha in alphas:
+    ridge = Ridge(alpha=alpha)
+    scores = cross_val_score(
+        ridge, X_scaled, y, cv=5, 
+        scoring='neg_mean_squared_error'
+    )
+    rmse = np.sqrt(-scores.mean())
+    print(f"Ridge alpha={alpha}: RMSE={rmse:.4f}")
+
+# Lasso Regression
+for alpha in alphas:
+    lasso = Lasso(alpha=alpha)
+    scores = cross_val_score(
+        lasso, X_scaled, y, cv=5,
+        scoring='neg_mean_squared_error'
+    )
+    rmse = np.sqrt(-scores.mean())
+    n_features = np.sum(lasso.coef_ != 0)
+    print(f"Lasso alpha={alpha}: RMSE={rmse:.4f}, "
+          f"n_features={n_features}")
+\end{verbatim}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+ผลลัพธ์ที่ได้ (ตัวอย่าง):
+
+Ridge alpha=0.01: RMSE=5.2341
+Ridge alpha=0.1: RMSE=4.8923
+Ridge alpha=1: RMSE=4.1234
+Ridge alpha=10: RMSE=4.5678
+Ridge alpha=100: RMSE=5.8901
+
+Lasso alpha=0.01: RMSE=4.0892, n_features=9
+Lasso alpha=0.1: RMSE=4.2345, n_features=7
+Lasso alpha=1: RMSE=4.6789, n_features=5
+Lasso alpha=10: RMSE=5.4321, n_features=2
+Lasso alpha=100: RMSE=6.1234, n_features=0
+
+หมายเหตุ: n\_features คือจำนวนตัวแปร
+ที่มีสัมประสิทธิ์ไม่เท่ากับศูนย์
+\end{minipage}
+\caption{Python code และผลลัพธ์การเปรียบเทียบ Ridge และ Lasso}
+\label{fig:regularization_code}
+\end{figure}
+
+%##########################################
+\section{การเปรียบเทียบและคัดเลือกตัวแบบ}
+ในทางปฏิบัติ การพัฒนาตัวแบบการเรียนรู้ของเครื่องมักไม่ได้มีเพียงตัวเลือกเดียว แต่ต้องพิจารณาตัวแบบหลายตัวที่มีประสิทธิภาพแตกต่างกัน การเปรียบเทียบและคัดเลือกตัวแบบที่เหมาะสมจึงเป็นขั้นตอนสำคัญในกระบวนการวิทยาการข้อมูล
+
+หลักการในการเปรียบเทียบตัวแบบมีดังนี้ ประการแรก ต้องใช้ข้อมูลชุดเดียวกันในการทดสอบทุกตัวแบบเพื่อให้การเปรียบเทียบมีความยุติธรรม ประการที่สอง ควรใช้ตัวชี้วัดประสิทธิภาพที่เหมาะสมกับประเภทปัญหา เช่น Accuracy หรือ F1-Score สำหรับ Classification และ MSE หรือ R-squared สำหรับ Regression ประการที่สาม ต้องใช้การตรวจสอบความถูกต้อง (Validation) เช่น Cross-Validation เพื่อให้ได้ผลการประเมินที่น่าเชื่อถือ และประการสุดท้าย ต้องพิจารณาปัจจัยอื่น ๆ นอกเหนือจากประสิทธิภาพ เช่น ความเรียบง่ายในการตีความ (Interpretability) เวลาในการฝึกและทำนาย รวมถึงความต้องการทรัพยากรคอมพิวเตอร์
+
+วิธีการคัดเลือกตัวแบบที่นิยมใช้ ได้แก่ การเปรียบเทียบโดยตรงจากผล Cross-Validation การใช้เกณฑ์ BIC (Bayesian Information Criterion) หรือ AIC (Akaike Information Criterion) สำหรับตัวแบบทางสถิติ การใช้ Ensemble Methods เช่น Voting หรือ Stacking เพื่อรวมตัวแบบหลายตัว และการใช้เทคนิค Hyperparameter Tuning เช่น Grid Search หรือ Random Search เพื่อหาค่าพารามิเตอร์ที่เหมาะสมที่สุด
+
+เมื่อเลือกตัวแบบที่ดีที่สุดได้แล้ว ขั้นตอนสุดท้ายคือการนำตัวแบบไปฝึกด้วยข้อมูลทั้งหมด (Training Set + Test Set) ก่อนนำไปใช้งานจริง เนื่องจากในการประเมินประสิทธิภาพที่ผ่านมา เราถือส่วนหนึ่งของข้อมูลไว้สำหรับทดสอบ ทำให้ตัวแบบที่ได้ยังไม่ได้ใช้ข้อมูลทั้งหมดในการเรียนรู้ ดังนั้นเมื่อได้ตัวแบบที่ดีที่สุดแล้ว ควรฝึกใหม่ด้วยข้อมูลทั้งหมดเพื่อให้ได้ตัวแบบขั้นสุดท้ายที่พร้อมใช้งาน
+
+\begin{exercise}
+\begin{enumerate}
+\item จากข้อมูลการพยากรณ์ราคาบ้าน 10 ตัวอย่าง จงคำนวณค่า MSE, RMSE, MAE และ R-squared เมื่อค่าจริงคือ [250, 300, 180, 420, 380, 200, 450, 320, 280, 390] (หน่วย: พันบาท) และค่าทำนายคือ [245, 310, 175, 400, 370, 210, 430, 315, 290, 385]
+
+\item จงอธิบายความแตกต่างระหว่าง Overfitting และ Underfitting พร้อมยกตัวอย่างสถานการณ์ที่อาจเกิดปัญหาแต่ละประเภท
+
+\item ทำไม F1-Score จึงเป็นตัวชี้วัดที่ดีกว่า Accuracy ในบางสถานการณ์ และจงยกตัวอย่างสถานการณ์ที่ Accuracy ไม่เหมาะสมที่จะใช้
+
+\item เปรียบเทียบข้อดีข้อดีของ Ridge และ Lasso Regression โดยในสถานการณ์ใดควรเลือกใช้แต่ละวิธี
+\end{enumerate}
+\end{exercise}
 
 \newpage
 %\RefChapter

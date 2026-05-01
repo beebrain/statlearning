@@ -1,5 +1,5 @@
 % Identification
-\ProvidesPackage{ProbStatInference}
+\ProvidesClass{SLclass_2025-10-11}
 
 % This class is based on the standard report class.
 % It should have option to process twoside report too.

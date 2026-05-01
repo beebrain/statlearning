@@ -135,9 +135,109 @@ $\epsilon$ แทน ค่าความคลาดเคลื่อน (Err
 \section{การถดถอยเชิงเส้นอย่างง่าย (Simple Linear Regression)}
 
 \subsection{ตัวแบบการถดถอยเชิงเส้นอย่างง่าย}
+การถดถอยเชิงเส้นอย่างง่าย (Simple Linear Regression) เป็นวิธีการทางสถิติที่ใช้สำหรับศึกษาความสัมพันธ์ระหว่างตัวแปรอิสระตัวเดียว $x$ กับตัวแปรตาม $y$ ในรูปของความสัมพันธ์เชิงเส้น ตัวแบบนี้เป็นพื้นฐานที่สำคัญสำหรับการทำความเข้าใจการวิเคราะห์การถดถอยในเชิงลึกต่อไป
+
+ตัวแบบการถดถอยเชิงเส้นอย่างง่ายมีรูปแบบดังนี้
+
+\[
+y = \beta_0 + \beta_1 x + \varepsilon
+\]
+
+โดยที่ $\beta_0$ คือจุดตัดแกน (Intercept) ซึ่งเป็นค่าของ $y$ เมื่อ $x = 0$ และ $\beta_1$ คือความชัน (Slope) ซึ่งแสดงการเปลี่ยนแปลงของ $y$ เมื่อ $x$ เพิ่มขึ้น 1 หน่วย $\varepsilon$ คือค่าความคลาดเคลื่อน (Error Term) ที่เป็นตัวแทนของความผิดพลาดในการทำนายที่ไม่สามารถอธิบายได้ด้วยความสัมพันธ์เชิงเส้น
+
+\begin{exmp}
+\label{exmp:simple_linear_regression_study_hours}
+พิจารณาตัวอย่างการศึกษาความสัมพันธ์ระหว่างจำนวนชั่วโมงการอ่านหนังสือต่อวันกับคะแนนสอบของนักศึกษา 8 คน ดังตาราง \ref{tab:study_hours_data}
+
+\begin{table}[h!]
+\centering
+\caption{ข้อมูลจำนวนชั่วโมงอ่านหนังสือและคะแนนสอบของนักศึกษา 8 คน}
+\label{tab:study_hours_data}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{นักศึกษา} & \textbf{ชั่วโมงอ่านต่อวัน ($x$)} & \textbf{คะแนนสอบ ($y$)} \\ \hline
+1 & 1.0 & 45 \\ \hline
+2 & 2.0 & 52 \\ \hline
+3 & 3.0 & 58 \\ \hline
+4 & 3.5 & 65 \\ \hline
+5 & 4.0 & 70 \\ \hline
+6 & 4.5 & 75 \\ \hline
+7 & 5.5 & 82 \\ \hline
+8 & 6.0 & 88 \\ \hline
+\end{tabular}
+\end{table}
+
+จากข้อมูลในตาราง สมมติได้สมการถดถอย $\hat{y} = 33.2 + 9.1x$ หมายความว่าทุก 1 ชั่วโมงที่เพิ่มขึ้น คะแนนสอบจะเพิ่มขึ้นประมาณ 9.1 คะแนน และเมื่อ $x = 0$ ค่าคะแนนพยากรณ์เบื้องต้นคือ 33.2 คะแนน
+\end{exmp}
+
 \subsection{วิธีกำลังสองน้อยที่สุด (Least Squares Method)}
+วิธีกำลังสองน้อยที่สุด (Ordinary Least Squares: OLS) เป็นวิธีมาตรฐานในการประมาณค่าพารามิเตอร์ $\beta_0$ และ $\beta_1$ ของตัวแบบการถดถอยเชิงเส้น โดยมีหลักการคือการเลือกค่า $\hat{\beta}_0$ และ $\hat{\beta}_1$ ที่ทำให้ผลรวมของค่าความคลาดเคลื่อนยกกำลังสอง (Residual Sum of Squares: RSS) มีค่าน้อยที่สุด
+
+\[
+\text{RSS} = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2 = \sum_{i=1}^{n}\left(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i\right)^2
+\]
+
+\begin{exmp}
+\label{exmp:ols_calculation}
+จากข้อมูลในตัวอย่าง \ref{exmp:simple_linear_regression_study_hours} การคำนวณค่า $\hat{\beta}_0$ และ $\hat{\beta}_1$ ด้วยวิธี OLS มีขั้นตอนดังนี้
+
+จากสูตร
+
+\[
+\hat{\beta}_1 = \frac{\sum_{i=1}^{n}(x_i - \bar{x})(y_i - \bar{y})}{\sum_{i=1}^{n}(x_i - \bar{x})^2}, \qquad
+\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}
+\]
+
+โดยมีค่าเฉลี่ย $\bar{x} = 3.69$ และ $\bar{y} = 66.88$ จากการคำนวณจะได้
+
+\[
+\hat{\beta}_1 = \frac{269.5}{29.63} \approx 9.09, \qquad \hat{\beta}_0 = 66.88 - 9.09(3.69) \approx 33.3
+\]
+
+ดังนั้นสมการถดถอยคือ $\hat{y} = 33.3 + 9.09x$
+\end{exmp}
+
 \subsection{การตีความค่าสัมประสิทธิ์}
+การตีความค่าสัมประสิทธิ์การถดถอยเป็นส่วนสำคัญในการวิเคราะห์ผลลัพธ์ ค่า $\hat{\beta}_1$ แสดงการเปลี่ยนแปลงโดยเฉลี่ยของตัวแปรตาม $y$ เมื่อตัวแปรอิสระ $x$ เพิ่มขึ้น 1 หน่วย โดยที่ตัวแปรอื่น ๆ คงที่ (Ceteris Paribus)
+
+\begin{exmp}
+\label{exmp:coefficient_interpretation}
+จากสมการถดถอยในตัวอย่าง \ref{exmp:simple_linear_regression_study_hours} ค่า $\hat{\beta}_1 = 9.09$ หมายความว่าเมื่อนักศึกษาอ่านหนังสือเพิ่มขึ้น 1 ชั่วโมงต่อวัน คะแนนสอบจะเพิ่มขึ้นโดยเฉลี่ย 9.09 คะแนน ค่า $\hat{\beta}_0 = 33.3$ หมายความว่าหากนักศึกษาไม่อ่านหนังสือเลย ($x = 0$) คะแนนสอบที่พยากรณ์ได้คือ 33.3 คะแนน อย่างไรก็ตาม ค่านี้อาจไม่มีความหมายในทางปฏิบัติเนื่องจากการ extrapolate ไปนอกช่วงของข้อมูลที่สังเกต
+\end{exmp}
+
 \subsection{การประเมินประสิทธิภาพของโมเดล}
+การประเมินประสิทธิภาพของตัวแบบการถดถอยเชิงเส้นใช้ตัวชี้วัดหลายตัว ได้แก่ $R^2$ (Coefficient of Determination) ซึ่งแสดงสัดส่วนของความแปรปรวนของ $y$ ที่สามารถอธิบายได้ด้วยตัวแบบ และ RMSE (Root Mean Squared Error) ซึ่งแสดงค่าเบี่ยงเบนเฉลี่ยของค่าทำนายจากค่าจริงในหน่วยเดียวกับ $y$
+
+\begin{exmp}
+\label{exmp:r_squared_calculation}
+จากข้อมูลในตัวอย่าง \ref{exmp:simple_linear_regression_study_hours} สมมติได้ค่า $\hat{y}$ จากสมการ $\hat{y} = 33.3 + 9.09x$ ดังนี้
+
+\begin{table}[h!]
+\centering
+\caption{ค่าทำนายและค่าคงเหลือจากสมการถดถอย}
+\label{tab:residual_calc}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+$x$ & $y$ & $\hat{y}$ & $y - \hat{y}$ & $(y - \hat{y})^2$ \\ \hline
+1.0 & 45 & 42.4 & 2.6 & 6.76 \\ \hline
+2.0 & 52 & 51.5 & 0.5 & 0.25 \\ \hline
+3.0 & 58 & 60.6 & $-2.6$ & 6.76 \\ \hline
+3.5 & 65 & 65.1 & $-0.1$ & 0.01 \\ \hline
+4.0 & 70 & 69.7 & 0.3 & 0.09 \\ \hline
+4.5 & 75 & 74.2 & 0.8 & 0.64 \\ \hline
+5.5 & 82 & 83.3 & $-1.3$ & 1.69 \\ \hline
+6.0 & 88 & 87.8 & 0.2 & 0.04 \\ \hline
+\end{tabular}
+\end{table}
+
+จากตาราง ค่า RMSE คำนวณได้จาก
+
+\[
+\text{RMSE} = \sqrt{\frac{\sum(y_i - \hat{y}_i)^2}{n}} = \sqrt{\frac{16.24}{8}} \approx 1.43 \text{ คะแนน}
+\]
+
+และสามารถคำนวณค่า $R^2 \approx 0.975$ ซึ่งหมายความว่าตัวแบบสามารถอธิบายความแปรปรวนของคะแนนสอบได้ประมาณ 97.5\%
+\end{exmp}
 
 
 
@@ -240,7 +340,29 @@ $\bm{\epsilon}=(\epsilon_1, \epsilon_2, \ldots, \epsilon_n)^T=\begin{bmatrix}
 	\end{itemize}
 	โดยที่ $\widehat{\by}_i=(\hat{y}_{1}, \hat{y}_{2}, \ldots, \hat{y}_{n})^T$ แทนค่าการทำนายของตัวแปรตาม และ $\widehat{\bbeta}=(\hat{\beta}_{1}, \hat{\beta}_{2}, \ldots, \hat{\beta}_{k})^T$
 	แทนค่าประมาณของพารามิเตอร์ $\bbeta$
-\end{myLimit} 
+\end{myLimit}
+
+\begin{exmp}
+\label{exmp:multiple_linear_regression_housing}
+พิจารณาตัวอย่างการพยากรณ์ราคาบ้าน ($y$ หน่วย: ล้านบาท) โดยใช้ตัวแปรอิสระ 2 ตัว ได้แก่ ขนาดพื้นที่ใช้สอย ($x_1$ ตารางเมตร) และจำนวนห้องนอน ($x_2$) ของบ้าน 5 หลัง ดังตาราง \ref{tab:housing_data}
+
+\begin{table}[h!]
+\centering
+\caption{ข้อมูลราคาบ้าน ขนาดพื้นที่ และจำนวนห้องนอน}
+\label{tab:housing_data}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{บ้าน} & $x_1$ (ตร.ม.) & $x_2$ (ห้องนอน) & $y$ (ล้านบาท) \\ \hline
+1 & 80 & 2 & 3.2 \\ \hline
+2 & 100 & 3 & 4.5 \\ \hline
+3 & 120 & 3 & 5.0 \\ \hline
+4 & 150 & 4 & 6.8 \\ \hline
+5 & 200 & 5 & 8.5 \\ \hline
+\end{tabular}
+\end{table}
+
+สมมติได้สมการถดถอยเชิงเส้นพหุคูณ $\hat{y} = 0.5 + 0.03x_1 + 0.4x_2$ การตีความคือ เมื่อขนาดพื้นที่เพิ่มขึ้น 1 ตารางเมตร โดยที่จำนวนห้องนอนคงที่ ราคาบ้านจะเพิ่มขึ้น 0.03 ล้านบาท และเมื่อจำนวนห้องนอนเพิ่มขึ้น 1 ห้อง โดยที่ขนาดพื้นที่คงที่ ราคาบ้านจะเพิ่มขึ้น 0.4 ล้านบาท
+\end{exmp}
 
 
 \section{การถดถอยโลจิสติก}
@@ -269,6 +391,28 @@ $$\sigma(Y) = \frac{1}{1 + \exp(-Y)}$$
 
 ฟังก์ชันนี้มีโดเมนเป็นจำนวนจริงทั้งหมด $(-\infty, \infty)$ และมีเรนจ์เป็น $(0, 1)$ ซึ่งสอดคล้องกับค่าความน่าจะเป็น ลักษณะของกราฟที่เป็นรูปตัวเอส (S-shaped Curve) สะท้อนธรรมชาติของการเปลี่ยนแปลงความน่าจะเป็นในสถานการณ์จริง
 \end{myBox}
+
+\begin{exmp}
+\label{exmp:sigmoid_calculation}
+พิจารณาการคำนวณค่าฟังก์ชันซิกมอยด์สำหรับค่าตัวทำนายเชิงเส้นต่าง ๆ ดังนี้
+
+\begin{table}[h!]
+\centering
+\caption{ค่าฟังก์ชันซิกมอยด์สำหรับค่า $Y$ ต่าง ๆ}
+\label{tab:sigmoid_values}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{ค่า $Y = \mathbf{x}^T\boldsymbol{\beta}$} & $\sigma(Y) = \frac{1}{1+e^{-Y}}$ \\ \hline
+$-3.0$ & $0.047$ \\ \hline
+$-1.0$ & $0.269$ \\ \hline
+$0.0$ & $0.500$ \\ \hline
+$1.0$ & $0.731$ \\ \hline
+$3.0$ & $0.953$ \\ \hline
+\end{tabular}
+\end{table}
+
+จะเห็นได้ว่าเมื่อ $Y = 0$ ค่าซิกมอยด์จะเท่ากับ $0.5$ ซึ่งเป็นค่าขอบเขตการตัดสินใจ (Decision Boundary) และเมื่อ $Y$ เพิ่มขึ้นอย่างไม่มีขอบเขต ค่าซิกมอยด์จะเข้าใกล้ $1$ ในทางตรงข้าม เมื่อ $Y$ ลดลงอย่างไม่มีขอบเขต ค่าซิกมอยด์จะเข้าใกล้ $0$
+\end{exmp}
 
 คุณสมบัติทางคณิตศาสตร์ที่สำคัญของฟังก์ชันซิกมอยด์ประการหนึ่งคือความเป็นฟังก์ชันที่เพิ่มขึ้นเสมอ (Strictly Monotonic Increasing) ซึ่งรับประกันว่าความสัมพันธ์ระหว่างตัวแปรอิสระกับความน่าจะเป็นจะมีทิศทางที่สม่ำเสมอ นอกจากนี้ ฟังก์ชันซิกมอยด์ยังมีอนุพันธ์ที่ต่อเนื่องและคำนวณได้ง่าย โดยที่
 
@@ -1599,10 +1743,57 @@ $$\ln \left( \frac{p}{1-p} \right) \approx 0.2061 - 0.0166(\text{Score}) - 0.220
 %######################################
 
 \section{การถดถอยแบบ Regularization}
+การถดถอยแบบ Regularization เป็นเทคนิคที่ใช้เพื่อป้องกันปัญหา Overfitting ในกรณีที่ตัวแบบมีความซับซ้อนมากเกินไปหรือมีตัวแปรอิสระจำนวนมาก โดยการเพิ่มข้อจำกัด (Penalty Term) เข้าไปในฟังก์ชันความสูญเสีย (Loss Function) เพื่อจำกัดไม่ให้ค่าสัมประสิทธิ์มีขนาดใหญ่เกินไป
+
 \subsection{Ridge Regression (L2 Regularization)}
+Ridge Regression หรือ L2 Regularization เป็นวิธีการที่เพิ่มข้อจำกัดในรูปของผลรวมกำลังสองของสัมประสิทธิ์ทั้งหมด โดยมีฟังก์ชันวัตถุประสงค์ดังนี้
+
+\[
+\hat{\boldsymbol{\beta}}^{\text{Ridge}} = \arg\min_{\boldsymbol{\beta}} \left\{ \sum_{i=1}^{n}(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2 + \lambda \sum_{j=1}^{k}\beta_j^2 \right\}
+\]
+
+โดยที่ $\lambda \geq 0$ คือค่า Hyperparameter ที่ควบคุมความเข้มของการ Regularize
+
+\begin{exmp}
+\label{exmp:ridge_regression_example}
+พิจารณาตัวอย่างการประมาณค่าสัมประสิทธิ์ด้วย Ridge Regression จากข้อมูล 3 ชุด โดยมี $n=3$, $k=2$ และ $\lambda = 0.5$ กำหนดให้ค่าสังเกต $(y_1, y_2, y_3) = (3, 2, 4)$ และค่าตัวแปรอิสระ $\mathbf{X} = \begin{bmatrix} 1 & 2 \\ 1 & 3 \\ 1 & 4 \end{bmatrix}$
+
+สมมติได้ค่าประมาณจาก OLS คือ $\hat{\beta}_0 = 1.0$ และ $\hat{\beta}_1 = 0.8$ เมื่อใช้ Ridge ด้วย $\lambda = 0.5$ จะได้
+
+\[
+\hat{\beta}_0^{\text{Ridge}} = 1.0, \qquad \hat{\beta}_1^{\text{Ridge}} = \frac{0.8}{1 + 0.5} \approx 0.53
+\]
+
+จะเห็นได้ว่าค่า $\hat{\beta}_1$ ถูกลดขนาดลง (Shrinkage) จาก 0.8 เป็น 0.53 ทำให้ตัวแบบมีความเสถียรมากขึ้น
+\end{exmp}
+
 \subsection{Lasso Regression (L1 Regularization)}
+Lasso Regression หรือ L1 Regularization เป็นวิธีการที่เพิ่มข้อจำกัดในรูปของผลรวมค่าสัมบูรณ์ของสัมประสิทธิ์ ซึ่งมีคุณสมบัติพิเศษในการทำ Feature Selection อัตโนมัติโดยการตัดค่าสัมประสิทธิ์บางตัวให้เป็นศูนย์
+
+\[
+\hat{\boldsymbol{\beta}}^{\text{Lasso}} = \arg\min_{\boldsymbol{\beta}} \left\{ \sum_{i=1}^{n}(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2 + \lambda \sum_{j=1}^{k}|\beta_j| \right\}
+\]
+
+\begin{exmp}
+\label{exmp:lasso_regression_example}
+พิจารณาเปรียบเทียบผลของ Ridge และ Lasso บนข้อมูลชุดเดียวกัน สมมติได้ค่าสัมประสิทธิ์จาก OLS คือ $\hat{\boldsymbol{\beta}} = (0.5, 1.2, -0.8, 0.3)^T$ เมื่อใช้ $\lambda = 1.0$
+
+สำหรับ Ridge ($\lambda \sum\beta_j^2$): $\hat{\beta}^{\text{Ridge}} = (0.33, 0.80, -0.53, 0.20)^T$
+
+สำหรับ Lasso ($\lambda \sum|\beta_j|$): $\hat{\beta}^{\text{Lasso}} = (0.0, 0.7, -0.3, 0.0)^T$
+
+จะเห็นได้ว่า Lasso ทำให้ $\beta_1$ และ $\beta_4$ ถูกตัดออกเป็นศูนย์ ซึ่งแสดงคุณสมบัติ Feature Selection ของ Lasso
+\end{exmp}
+
 \subsection{Elastic Net Regression}
+Elastic Net ผสมผสานข้อดีของทั้ง Ridge และ Lasso โดยใช้ Penalty ทั้ง L1 และ L2 พร้อมกัน
+
+\[
+\hat{\boldsymbol{\beta}}^{\text{Elastic}} = \arg\min_{\boldsymbol{\beta}} \left\{ \sum_{i=1}^{n}(y_i - \mathbf{x}_i^T\boldsymbol{\beta})^2 + \lambda_1 \sum_{j=1}^{k}|\beta_j| + \lambda_2 \sum_{j=1}^{k}\beta_j^2 \right\}
+\]
+
 \subsection{การเกำหนดค่า Hyperparameter}
+การเลือกค่า $\lambda$ ที่เหมาะสมเป็นสิ่งสำคัญสำหรับทุกวิธี Regularization โดยทั่วไปใช้วิธี Cross-Validation เพื่อหาค่า $\lambda$ ที่ให้ค่า Validation Error ต่ำที่สุด
 
 
 %\section*{แบบฝึกหัด (Assignment)}

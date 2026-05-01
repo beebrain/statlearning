@@ -4,14 +4,162 @@
 
 \section{ต้นไม้ตัดสินใจ (Decision Trees)}
 \subsection{โครงสร้างและหลักการทำงาน}
-\subsection{เอนโทรปี}
-\subsection{เกรนความรู้และอัตราเกรนความรู้}
+ต้นไม้ตัดสินใจ (Decision Tree) เป็นโครงสร้างข้อมูลที่ประกอบด้วยโหนด (Node) และกิ่ง (Branch) โดยโหนดภายใน (Internal Node) แทนการทดสอบเงื่อนไขบนตัวแปร แต่ละกิ่งแทนผลลัพธ์ของการทดสอบ และโหนดลีฟ (Leaf Node) แทนค่าคำตอบ (Class Label หรือ Regression Value)
 
+\begin{exmp}
+\label{exmp:decision_tree_structure}
+พิจารณาตัวอย่างการตัดสินใจอนุมัติสินเชื่อ ต้นไม้ตัดสินใจมีโครงสร้างดังนี้
+
+\begin{figure}[h!]
+\centering
+%\includegraphics[width=0.8\textwidth]{decision_tree_loan_example.png}
+\caption{ตัวอย่างต้นไม้ตัดสินใจสำหรับการอนุมัติสินเชื่อ}
+\label{fig:loan_decision_tree}
+\end{figure}
+
+โหนดราก (Root Node): ทดสอบ \texttt{รายได้ $\geq$ 50,000 บาท/เดือน?}
+\begin{itemize}
+\item ถ้า \textbf{ใช่} $\rightarrow$ ไปทดสอบ \texttt{มีหลักประกัน?}
+  \begin{itemize}
+  \item ถ้ามีหลักประกัน $\rightarrow$ อนุมัติ
+  \item ถ้าไม่มี $\rightarrow$ ตรวจสอบประวัติเครดิต
+  \end{itemize}
+\item ถ้า \textbf{ไม่} $\rightarrow$ ไปทดสอบ \texttt{ประวัติเครดิตดี?}
+  \begin{itemize}
+  \item ถ้าดี $\rightarrow$ อนุมัติแบบมีเงื่อนไข
+  \item ถ้าไม่ดี $\rightarrow$ ไม่อนุมัติ
+  \end{itemize}
+\end{itemize}
+
+จากต้นไม้นี้ ผู้กู้ที่มีรายได้สูงและมีหลักประกันจะได้รับการอนุมัติ ในขณะที่ผู้กู้ที่มีรายได้ต่ำและประวัติเครดิตไม่ดีจะถูกปฏิเสธ
+\end{exmp}
+
+\subsection{เอนโทรปี}
+เอนโทรปี (Entropy) เป็นมาตรวัดความไม่บริสุทธิ์ (Impurity) ของชุดข้อมูล ใช้ในการวัดว่าชุดข้อมูลมีความหลากหลายมากน้อยเพียงใด สูตรของเอนโทรปีคือ
+
+\[
+\text{Entropy}(S) = -\sum_{i=1}^{c} p_i \log_2(p_i)
+\]
+
+โดยที่ $p_i$ คือสัดส่วนของตัวอย่างในคลาส $i$ และ $c$ คือจำนวนคลาสทั้งหมด
+
+\begin{exmp}
+\label{exmp:entropy_calculation}
+พิจารณาชุดข้อมูลลูกค้า 10 ราย ที่ต้องการสินเชื่อ โดยมีผลลัพธ์ดังนี้
+\begin{itemize}
+\item อนุมัติ: 7 ราย ($p_1 = 0.7$)
+\item ไม่อนุมัติ: 3 ราย ($p_2 = 0.3$)
+\end{itemize}
+
+ค่าเอนโทรปีของชุดข้อมูลนี้คำนวณได้ดังนี้
+
+\[
+\text{Entropy}(S) = -(0.7)\log_2(0.7) - (0.3)\log_2(0.3) \approx 0.610 + 0.521 = 1.131 \text{ bits}
+\]
+
+หากชุดข้อมูลมีเพียงคลาสเดียว (ทั้งหมดอนุมัติหรือไม่อนุมัติ) ค่าเอนโทรปีจะเท่ากับ 0 ซึ่งหมายถึงความบริสุทธิ์สมบูรณ์ ในทางกลับกัน หากชุดข้อมูลมีการกระจาย 50-50 ค่าเอนโทรปีจะเท่ากับ 1 bit ซึ่งเป็นค่าสูงสุด
+\end{exmp}
+
+\subsection{เกรนความรู้และอัตราเกรนความรู้}
+เกรนความรู้ (Information Gain) วัดการลดลงของเอนโทรปีหลังจากแบ่งข้อมูลตามตัวแปรใดตัวแปรหนึ่ง สูตรคือ
+
+\[
+\text{IG}(S, A) = \text{Entropy}(S) - \sum_{v \in \text{Values}(A)} \frac{|S_v|}{|S|} \text{Entropy}(S_v)
+\]
+
+อัตราเกรนความรู้ (Gain Ratio) เป็นการปรับปรุง Information Gain เพื่อลดอคติที่ชอบตัวแปรที่มีค่าหลายค่า
+
+\[
+\text{GR}(S, A) = \frac{\text{IG}(S, A)}{\text{SplitInformation}(S, A)}
+\]
+
+\begin{exmp}
+\label{exmp:information_gain}
+จากข้อมูลตัวอย่าง 10 รายในตัวอย่าง \ref{exmp:entropy_calculation} พิจารณาการแบ่งข้อมูลตามตัวแปร "ประเภทรายได้" ซึ่งมี 2 ค่า คือ "ประจำ" และ "Freelance"
+
+\begin{table}[h!]
+\centering
+\caption{ข้อมูลการแบ่งตามประเภทรายได้}
+\label{tab:income_split}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{ประเภทรายได้} & \textbf{จำนวน} & \textbf{อนุมัติ} & \textbf{ไม่อนุมัติ} \\ \hline
+ประจำ & 6 & 5 & 1 \\ \hline
+Freelance & 4 & 2 & 2 \\ \hline
+\end{tabular}
+\end{table}
+
+ค่าเอนโทรปีหลังแบ่ง:
+\begin{itemize}
+\item กลุ่มประจำ: $\text{Entropy} = -(5/6)\log_2(5/6) - (1/6)\log_2(1/6) \approx 0.650$ bits
+\item กลุ่ม Freelance: $\text{Entropy} = -(2/4)\log_2(2/4) - (2/4)\log_2(2/4) = 1.0$ bit
+\end{itemize}
+
+ค่า Information Gain:
+\[
+\text{IG} = 1.131 - \left(\frac{6}{10}(0.650) + \frac{4}{10}(1.0)\right) \approx 1.131 - 0.790 = 0.341 \text{ bits}
+\]
+
+ค่า Information Gain นี้แสดงว่าการแบ่งตามประเภทรายได้ช่วยลดความไม่แน่นอนลงได้ 0.341 bits
+\end{exmp}
 
 \section{การสุ่มป่าไม้ (Random Forest)}
 \subsection{แนวคิด Ensemble Learning}
+Ensemble Learning เป็นเทคนิคที่รวมการทำนายจากตัวแบบหลายตัวเพื่อให้ได้ผลลัพธ์ที่ดีกว่าตัวแบบใดตัวแบบหนึ่ง โดยอาศัยหลักการที่ว่าความผิดพลาดของตัวแบบแต่ละตัวมักจะไม่สัมพันธ์กัน (Uncorrelated Errors)
+
+\begin{exmp}
+\label{exmp:ensemble_voting}
+พิจารณาการจำแนกประเภทอีเมล 3 แบบ (Spam, Not Spam, Unknown) โดยใช้ตัวแบบ 5 ตัวใน Ensemble ผลลัพธ์การโหวตดังนี้
+
+\begin{itemize}
+\item ตัวแบบ 1: Spam
+\item ตัวแบบ 2: Not Spam
+\item ตัวแบบ 3: Spam
+\item ตัวแบบ 4: Spam
+\item ตัวแบบ 5: Unknown
+\end{itemize}
+
+ผลลัพธ์สุดท้าย (Majority Voting): Spam (3 จาก 5 โหวต)
+
+หากใช้ต้นไม้ตัดสินใจเพียงต้นเดียว อาจให้ผลลัพธ์ที่ไม่ถูกต้อง แต่การรวมการโหวตจากหลายต้นช่วยลดความเสี่ยงของความผิดพลาดจากต้นใดต้นหนึ่ง
+\end{exmp}
+
 \subsection{Bagging และ Bootstrap Sampling}
+Bagging (Bootstrap Aggregating) เป็นวิธีการสร้างตัวแบบ Ensemble โดยการสุ่มข้อมูลย่อย (Bootstrap Samples) และฝึกตัวแบบแต่ละตัวบนข้อมูลย่อยเหล่านั้น จากนั้นรวมผลลัพธ์ด้วยการโหวตหรือการเฉลี่ย
+
+\begin{exmp}
+\label{exmp:bagging_example}
+จากชุดข้อมูล Training ขนาด $n = 10$ การสร้าง Bootstrap Sample ที่ 1 อาจได้ $\{x_3, x_1, x_7, x_1, x_5, x_9, x_1, x_2, x_4, x_7\}$ (สังเกตว่าบางรายการถูกเลือกซ้ำ บางรายการไม่ถูกเลือก)
+
+Bootstrap Sample ที่ 2 อาจได้ $\{x_2, x_5, x_8, x_1, x_3, x_6, x_10, x_4, x_7, x_9\}$
+
+การสุ่มแบบนี้ช่วยให้แต่ละต้นไม้เห็นข้อมูลที่แตกต่างกันเล็กน้อย ทำให้ความผิดพลาดของต้นไม้แต่ละต้นไม่สัมพันธ์กันอย่างสมบูรณ์
+\end{exmp}
+
 \subsection{ความสำคัญของตัวแปร (Feature Importance)}
+ความสำคัญของตัวแปร (Feature Importance) เป็นการวัดว่าแต่ละตัวแปรมีส่วนร่วมในการลดความไม่บริสุทธิ์ (Impurity) ของโหนดในต้นไม้มากน้อยเพียงใด โดยทั่วไปคำนวณจากผลรวมของ Information Gain ที่ตัวแปรนั้นถูกใช้ในการแบ่งโหนด รวมถึงน้ำหนักตามจำนวนตัวอย่างในโหนดนั้น
+
+\begin{exmp}
+\label{exmp:feature_importance}
+จากการฝึก Random Forest บนข้อมูลการอนุมัติสินเชื่อ ค่า Feature Importance ของตัวแปรต่าง ๆ มีดังนี้
+
+\begin{table}[h!]
+\centering
+\caption{ค่า Feature Importance จาก Random Forest}
+\label{tab:feature_importance}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{ตัวแปร} & \textbf{Feature Importance} \\ \hline
+รายได้ & 0.42 \\ \hline
+ประวัติเครดิต & 0.31 \\ \hline
+อายุงาน & 0.15 \\ \hline
+หลักประกัน & 0.09 \\ \hline
+อื่น ๆ & 0.03 \\ \hline
+\end{tabular}
+\end{table}
+
+จากตารางจะเห็นได้ว่า "รายได้" และ "ประวัติเครดิต" เป็นตัวแปรที่มีความสำคัญมากที่สุดในการตัดสินใจอนุมัติสินเชื่อ ตัวแปรเหล่านี้ควรได้รับความสนใจเป็นพิเศษในการวิเคราะห์และการเก็บข้อมูล
+\end{exmp}
 
 
 

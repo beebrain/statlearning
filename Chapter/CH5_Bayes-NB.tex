@@ -1,15 +1,166 @@
 \chapter{นาอีฟเบส์}
 
 \section{ทฤษฎีบทของเบส์ (Bayes' Theorem)}
+ทฤษฎีบทของเบส์ (Bayes' Theorem) เป็นหลักการพื้นฐานทางความน่าจะเป็นที่ใช้ในการอัปเดตความน่าจะเป็นของสมมติฐานเมื่อมีหลักฐานใหม่เพิ่มเติม ทฤษฎีนี้ตั้งชื่อตามพอล ทอมัส เบส์ (Thomas Bayes) นักคณิตศาสตร์ชาวอังกฤษในศตวรรษที่ 18
+
+สูตรของทฤษฎีบทเบส์มีดังนี้
+
+\[
+P(H|E) = \frac{P(E|H) \cdot P(H)}{P(E)}
+\]
+
+โดยที่ $P(H|E)$ คือความน่าจะเป็นภายหลัง (Posterior Probability) ของสมมติฐาน $H$ เมื่อทราบหลักฐาน $E$, $P(E|H)$ คือความน่าจะเป็นของหลักฐาน $E$ เมื่อสมมติฐาน $H$ เป็นจริง (Likelihood), $P(H)$ คือความน่าจะเป็นก่อน (Prior Probability) ของสมมติฐาน $H$ และ $P(E)$ คือความน่าจะเป็นรวมของหลักฐาน $E$
+
+\begin{exmp}
+\label{exmp:bayes_theorem_medical}
+พิจารณาการวินิจฉัยโรค สมมติว่าโรค $D$ พบได้ใน 1\% ของประชากร ($P(D) = 0.01$) และการตรวจที่ใช้มีความไว (Sensitivity) 99\% คือ $P(\text{Test}^+ | D) = 0.99$ และมีความจำเพาะ (Specificity) 95\% คือ $P(\text{Test}^- | \neg D) = 0.95$
+
+หากผู้ป่วยได้ผลตรวจเป็นบวก (Test$^+$) ความน่าจะเป็นที่ผู้ป่วยจะเป็นโรคจริง ๆ คือ
+
+\[
+P(D|\text{Test}^+) = \frac{P(\text{Test}^+|D) \cdot P(D)}{P(\text{Test}^+)}
+\]
+
+โดยที่ $P(\text{Test}^+) = P(\text{Test}^+|D) \cdot P(D) + P(\text{Test}^+|\neg D) \cdot P(\neg D) = 0.99 \times 0.01 + 0.05 \times 0.99 = 0.0099 + 0.0495 = 0.0594$
+
+ดังนั้น
+\[
+P(D|\text{Test}^+) = \frac{0.99 \times 0.01}{0.0594} = \frac{0.0099}{0.0594} \approx 0.167 \text{ หรือ } 16.7\%
+\]
+
+แม้ว่าการตรวจจะมีความไวสูงถึง 99\% แต่เนื่องจากโรคพบได้น้อย (1\%) ความน่าจะเป็นที่ผู้ที่ตรวจบวกจะเป็นโรคจริง ๆ มีเพียงประมาณ 16.7\% เท่านั้น
+\end{exmp}
+
 \section{ตัวจำแนกนาอีฟเบส์ (Naive Bayes Classifier)}
+ตัวจำแนกนาอีฟเบส์ (Naive Bayes Classifier) เป็นอัลกอริทึมการเรียนรู้ของเครื่องที่ใช้ทฤษฎีบทเบส์ในการจำแนกประเภท โดยใช้สมมติฐานความเป็นอิสระ (Independence Assumption) ระหว่างตัวแปรอิสระทั้งหมด
+
+สูตรการจำแนกคือ
+
+\[
+\hat{y} = \arg\max_{y} P(y) \prod_{i=1}^{n} P(x_i | y)
+\]
+
+โดยที่ $P(y)$ คือความน่าจะเป็นก่อน (Prior) ของคลาส $y$, $x_i$ คือค่าของตัวแปรอิสระตัวที่ $i$ และ $P(x_i | y)$ คือความน่าจะเป็นแบบมีเงื่อนไข (Likelihood)
+
+\begin{exmp}
+\label{exmp:naive_bayes_email}
+พิจารณาการจำแนกอีเมลเป็น Spam หรือ Not Spam โดยใช้คำ 2 คำ คือ "ซื้อ" และ "ด่วน" จากข้อมูล Training 100 ฉบับ
+
+\begin{itemize}
+\item อีเมลทั้งหมด: 100 ฉบับ
+\item Spam: 30 ฉบับ, Not Spam: 70 ฉบับ
+\item อีเมลที่มีคำว่า "ซื้อ": Spam 20 ฉบับ, Not Spam 5 ฉบับ
+\item อีเมลที่มีคำว่า "ด่วน": Spam 15 ฉบับ, Not Spam 3 ฉบับ
+\end{itemize}
+
+คำนวณความน่าจะเป็น:
+\begin{itemize}
+\item $P(\text{Spam}) = 30/100 = 0.3$, $P(\text{Not Spam}) = 70/100 = 0.7$
+\item $P(\text{ซื้อ}|\text{Spam}) = 20/30 = 0.67$, $P(\text{ซื้อ}|\text{Not Spam}) = 5/70 = 0.07$
+\item $P(\text{ด่วน}|\text{Spam}) = 15/30 = 0.5$, $P(\text{ด่วน}|\text{Not Spam}) = 3/70 = 0.04$
+\end{itemize}
+
+หากมีอีเมลใหม่ที่มีคำว่า "ซื้อ" และ "ด่วน" จะคำนวณได้
+
+\[
+P(\text{Spam}|\text{ซื้อ},\text{ด่วน}) \propto 0.3 \times 0.67 \times 0.5 = 0.1005
+\]
+\[
+P(\text{Not Spam}|\text{ซื้อ},\text{ด่วน}) \propto 0.7 \times 0.07 \times 0.04 = 0.00196
+\]
+
+ดังนั้น $\hat{y} = \text{Spam}$ เพราะ $0.1005 > 0.00196$
+\end{exmp}
+
 \section{สมมติฐานความเป็นอิสระ (Independence Assumption)}
+สมมติฐานความเป็นอิสระ (Independence Assumption) เป็นหัวใจสำคัญของนาอีฟเบส์ โดยกำหนดให้ตัวแปรอิสระทั้งหมดมีความเป็นอิสระต่อกันเมื่อทราบค่าของคลาส
+
+ในทางปฏิบัติ สมมติฐานนี้มักไม่เป็นจริง (นั่นคือที่มาของคำว่า "Naive") แต่แม้จะมีการละเมิดสมมติฐาน ตัวจำแนกนาอีฟเบส์ยังคงให้ผลลัพธ์ที่ดีในหลายกรณี โดยเฉพาะเมื่อต้องการความเรียบง่ายและความเร็วในการคำนวณ
 
 \section{ประเภทของนาอีฟเบส์}
 
 \subsection{Binomial Naive Bayes}
+Binomial Naive Bayes ใช้สำหรับข้อมูลที่มีลักษณะเป็น Binary (0/1) เช่น การมีหรือไม่มีคำในเอกสาร หรือ ผลลัพธ์การทดสอบแบบ ผ่าน/ไม่ผ่าน
+
+\begin{exmp}
+\label{exmp:binomial_naive_bayes}
+พิจารณาการทำนายการซื้อสินค้าจากโปรโมชัน 2 รายการ โดยมีข้อมูลดังนี้
+
+\begin{itemize}
+\item ลูกค้าทั้งหมด: 100 คน
+\item ซื้อเมื่อมีโปรโมชัน A: 40 คน, ไม่ซื้อ: 60 คน
+\item ซื้อเมื่อมีโปรโมชัน B: 35 คน, ไม่ซื้อ: 65 คน
+\item ซื้อเมื่อมีทั้ง A และ B: 30 คน
+\end{itemize}
+
+ใช้สูตร Binomial Naive Bayes สำหรับการทำนายการซื้อเมื่อลูกค้าได้รับโปรโมชัน A แต่ไม่ได้รับ B
+\end{exmp}
+
 \subsection{Gaussian Naive Bayes}
+Gaussian Naive Bayes สันนิษฐานว่าค่าของตัวแปรต่อเนื่องมีการแจกแจงปกติ (Normal Distribution) ภายในแต่ละคลาส
+
+\[
+P(x_i | y) = \frac{1}{\sqrt{2\pi\sigma_y^2}} \exp\left(-\frac{(x_i - \mu_y)^2}{2\sigma_y^2}\right)
+\]
+
+\begin{exmp}
+\label{exmp:gaussian_naive_bayes}
+พิจารณาการจำแนกดอกไม้ Iris โดยใช้ความยาวกลีบดอก (Petal Length) มีข้อมูลดังนี้
+
+\begin{itemize}
+\item คลาส Setosa: $\mu = 1.46$, $\sigma = 0.17$
+\item คลาส Versicolor: $\mu = 4.26$, $\sigma = 0.47$
+\item คลาส Virginica: $\mu = 5.55$, $\sigma = 0.55$
+\end{itemize}
+
+หากมีดอกไม้ที่มีความยาวกลีบดอก $x = 2.5$ จะคำนวณค่า Probability Density สำหรับแต่ละคลาส และเลือกคลาสที่มีค่าสูงสุด
+\end{exmp}
+
 \subsection{Lognormal Naive Bayes}
+Lognormal Naive Bayes ใช้สำหรับข้อมูลที่มีการแจกแจงแบบ Lognormal ซึ่งเป็นการแจกแจงของตัวแปรที่มีค่าบวกและมี Skewness สูง เช่น รายได้ ราคาสินค้า หรือขนาดไฟล์
+
 \subsection{Multinomial Naive Bayes}
+Multinomial Naive Bayes ใช้กับข้อมูลที่มีลักษณะเป็นการนับ (Count Data) โดยเฉพาะในงานประมวลผลภาษาธรรมชาติ (NLP) เช่น การจำแนกเอกสาร (Document Classification) ตามจำนวนคำที่ปรากฏ
+
+สูตรคือ
+
+\[
+P(x_i | y) = \frac{N_{yi} + \alpha}{N_y + \alpha \cdot n}
+\]
+
+โดยที่ $N_{yi}$ คือจำนวนครั้งที่คำ $i$ ปรากฏในเอกสารที่เป็นคลาส $y$, $N_y$ คือจำนวนคำทั้งหมดในคลาส $y$, $\alpha$ คือค่า Smoothing Parameter (มักใช้ 1 สำหรับ Laplace Smoothing) และ $n$ คือจำนวนคำที่แตกต่างกันทั้งหมด
+
+\begin{exmp}
+\label{exmp:multinomial_naive_bayes}
+พิจารณาการจำแนกเอกสาร 2 คลาส คือ กีฬา (Sports) และ เทคโนโลยี (Tech) จากจำนวนคำที่ปรากฏ
+
+\begin{table}[h!]
+\centering
+\caption{จำนวนคำที่ปรากฏในแต่ละคลาส}
+\label{tab:word_counts}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{คำ} & \textbf{Sports} & \textbf{Tech} & \textbf{รวม} \\ \hline
+บอล & 50 & 5 & 55 \\ \hline
+ทีม & 40 & 10 & 50 \\ \hline
+คอม & 3 & 35 & 38 \\ \hline
+AI & 2 & 30 & 32 \\ \hline
+\end{tabular}
+\end{table}
+
+รวมคำในคลาส Sports = 95, Tech = 75
+
+หากมีเอกสารใหม่ที่มีคำว่า "บอล" 2 ครั้ง และ "AI" 1 ครั้ง จะคำนวณได้
+
+\[
+P(\text{Sports}|\text{บอล}^2, \text{AI}^1) \propto 0.5 \times \left(\frac{50+1}{95+4}\right)^2 \times \left(\frac{2+1}{95+4}\right)^1
+\]
+\[
+P(\text{Tech}|\text{บอล}^2, \text{AI}^1) \propto 0.375 \times \left(\frac{5+1}{75+4}\right)^2 \times \left(\frac{30+1}{75+4}\right)^1
+\]
+
+เปรียบเทียบผลลัพธ์เพื่อจำแนกเอกสารไปยังคลาสที่มีค่าสูงกว่า
+\end{exmp}
 
 
 
